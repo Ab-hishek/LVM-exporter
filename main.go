@@ -12,7 +12,7 @@ import (
 
 func main() {
 
-	//Create a new instance of the foocollector and
+	//Create a new instance of the LvmCollector and
 	//register it with the prometheus client.
 	lvm := collector.NewLvmCollector()
 	prometheus.MustRegister(lvm)
