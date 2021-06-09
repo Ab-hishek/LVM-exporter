@@ -23,11 +23,11 @@ func NewLvmCollector() *LvmCollector {
 	return &LvmCollector{
 		vgSizeMetric: prometheus.NewDesc("vg_size_metric",
 			"Shows the total size of the LVM volume group in gb",
-			nil, nil,
+			[]string{"vg_name"}, nil,
 		),
 		vgFreeMetric: prometheus.NewDesc("lv_size_metric",
 			"Shows the free size of the LVM volume group in gb",
-			nil, nil,
+			[]string{"vg_name"}, nil,
 		),
 	}
 }
