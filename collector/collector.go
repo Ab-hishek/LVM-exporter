@@ -2,6 +2,10 @@ package collector
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"log"
+	"os/exec"
+	"strconv"
+	"strings"
 )
 
 //Define a struct for you collector that contains pointers
@@ -10,7 +14,7 @@ import (
 //but we just won't be exposing them as metrics.
 type LvmCollector struct {
 	vgSizeMetric *prometheus.Desc
-	lvSizeMetric *prometheus.Desc
+	vgFreeMetric *prometheus.Desc
 }
 
 //You must create a constructor for your collector that
@@ -18,11 +22,11 @@ type LvmCollector struct {
 func NewLvmCollector() *LvmCollector {
 	return &LvmCollector{
 		vgSizeMetric: prometheus.NewDesc("vg_size_metric",
-			"Shows the size of the volume group present in the node",
+			"Shows the total size of the LVM volume group in gb",
 			nil, nil,
 		),
-		lvSizeMetric: prometheus.NewDesc("lv_size_metric",
-			"Shows size of the logical volume present in the node",
+		vgFreeMetric: prometheus.NewDesc("lv_size_metric",
+			"Shows the free size of the LVM volume group in gb",
 			nil, nil,
 		),
 	}
@@ -34,22 +38,32 @@ func (collector *LvmCollector) Describe(ch chan<- *prometheus.Desc) {
 
 	//Update this section with the each metric you create for a given collector
 	ch <- collector.vgSizeMetric
-	ch <- collector.lvSizeMetric
+	ch <- collector.vgFreeMetric
 }
 
 //Collect implements required collect function for all promehteus collectors
 func (collector *LvmCollector) Collect(ch chan<- prometheus.Metric) {
-
-	//Implement logic here to determine proper metric value to return to prometheus
-	//for each descriptor or call other functions that do so.
-	var metricValue float64
-	if 1 == 1 {
-		metricValue = 1
+	out, err := exec.Command("/sbin/vgs", "--units", "g", "--separator", ",", "-o", "vg_name,vg_free,vg_size", "--noheadings").Output()
+	if err != nil {
+		log.Print(err)
 	}
-
-	//Write latest value for each metric in the prometheus metric channel.
-	//Note that you can pass CounterValue, GaugeValue, or UntypedValue types here.
-	ch <- prometheus.MustNewConstMetric(collector.vgSizeMetric, prometheus.CounterValue, metricValue)
-	ch <- prometheus.MustNewConstMetric(collector.lvSizeMetric, prometheus.CounterValue, metricValue)
-
+	lines := strings.Split(string(out),"\n")
+	for _, line := range lines {
+		values := strings.Split(line,",")
+		if len(values)==3 {
+			free_size, err := strconv.ParseFloat(strings.Trim(values[1],"g"), 64)
+			if err!= nil {
+				log.Print(err)
+			} else {
+				total_size, err := strconv.ParseFloat(strings.Trim(values[2],"g"), 64)
+				if err!= nil {
+					log.Print(err)
+				} else {
+					vg_name := strings.Trim(values[0], " ")
+					ch <- prometheus.MustNewConstMetric(collector.vgFreeMetric, prometheus.GaugeValue, free_size, vg_name)
+					ch <- prometheus.MustNewConstMetric(collector.vgSizeMetric, prometheus.GaugeValue, total_size, vg_name)
+				}
+			}
+		}
+	}
 }
