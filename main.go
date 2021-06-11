@@ -3,8 +3,6 @@ package main
 import (
 	"LVM-exporter/collector"
 	"github.com/prometheus/client_golang/prometheus"
-	//"github.com/joho/godotenv"
-	//"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"

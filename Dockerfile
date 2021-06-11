@@ -9,6 +9,6 @@ COPY go.sum ./
 RUN go mod download
 
 COPY . ./
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -o app
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -o lvm-exporter
 EXPOSE 9101
-ENTRYPOINT [ "/app" ]
+CMD [ "./lvm-exporter" ]
