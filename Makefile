@@ -13,7 +13,7 @@ LVMEXPORTERREPO ?= lvm-exporter
 IMGTAG ?= v1
 
 .PHONY: all
-all: deps fmt lvm-exporter
+all: deps go-deps fmt lvm-exporter
 
 .PHONY: help
 help:
@@ -40,13 +40,24 @@ deps:
 fmt:
 	@go fmt ./...
 
+.PHONY: go-deps
+go-deps:
+	@echo "--> Tidying up submodules"
+	@go mod tidy
+	@echo "--> Verifying submodules"
+	@go mod verify
+
+.PHONY: vendor
+vendor: go.mod go.sum go-deps
+	@go mod vendor
+
 .PHONY: lvm-exporter
 
 lvm-exporter:
 	@echo "------------------"
 	@echo "--> Build lvm-exporter image"
 	@echo "------------------"
-	docker build -t $(ACCOUNT)/$(LVMEXPORTERREPO):$(IMGTAG) .
+	docker build -t $(ACCOUNT)/$(LVMEXPORTERREPO):$(IMGTAG) -f Dockerfile .
 
 push:
 	@echo "------------------"

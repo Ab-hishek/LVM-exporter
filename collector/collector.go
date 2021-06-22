@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"LVM-exporter/lvm"
 )
 
 //Define a struct for you collector that contains pointers
@@ -35,7 +36,7 @@ func NewLvmCollector() *LvmCollector {
 //Each and every collector must implement the Describe function.
 //It essentially writes all descriptors to the prometheus desc channel.
 func (collector *LvmCollector) Describe(ch chan<- *prometheus.Desc) {
-
+	//vg := lvm.VolumeGroup{}
 	//Update this section with the each metric you create for a given collector
 	ch <- collector.vgSizeMetric
 	ch <- collector.vgFreeMetric
@@ -43,6 +44,7 @@ func (collector *LvmCollector) Describe(ch chan<- *prometheus.Desc) {
 
 //Collect implements required collect function for all prometheus collectors
 func (collector *LvmCollector) Collect(ch chan<- prometheus.Metric) {
+
 	out, err := exec.Command("/sbin/vgs", "--units", "g", "--separator", ",", "-o", "vg_name,vg_free,vg_size", "--noheadings").Output()
 	if err != nil {
 		log.Print(err)
