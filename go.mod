@@ -1,4 +1,4 @@
-module LVM-exporter
+module github.com/Ab-hishek/LVM-exporter
 
 go 1.13
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"LVM-exporter/collector"
+	"github.com/Ab-hishek/LVM-exporter/collector"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"

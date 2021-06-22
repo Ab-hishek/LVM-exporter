@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"LVM-exporter/lvm"
+	//"github.com/Ab-hishek/LVM-exporter/lvm"
 )
 
 //Define a struct for you collector that contains pointers
