@@ -52,7 +52,7 @@ func main() {
 	//Create a new instance of the LvmCollector and
 	//register it with the prometheus client.
 	lvmExporter := collector.NewLvmCollector()
-	prometheus.MustRegister(lvmExporter)
+	registry.MustRegister(lvmExporter)
 
 	http.Handle(*metricsPath, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

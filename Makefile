@@ -10,7 +10,7 @@ IS_DOCKER_INSTALLED = $(shell which docker >> /dev/null 2>&1; echo $$?)
 #docker info
 ACCOUNT ?= abhishek09dh
 LVMEXPORTERREPO ?= lvm-exporter
-IMGTAG ?= v3
+IMGTAG ?= v8
 
 .PHONY: all
 all: deps go-deps fmt lvm-exporter

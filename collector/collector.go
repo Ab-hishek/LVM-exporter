@@ -205,7 +205,6 @@ func (collector *LvmCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- collector.pvDeviceSizeMetric
 	ch <- collector.pvMetadataSizeMetric
 	ch <- collector.pvMetadataFreeMetric
-
 }
 
 // Collect implements required collect function for all prometheus collectors
@@ -237,21 +236,21 @@ func (collector *LvmCollector) Collect(ch chan<- prometheus.Metric) {
 		klog.Errorf("error in getting the list of lvm logical volumes: %v", err)
 	} else {
 		for _, lv := range lvList {
-			ch <- prometheus.MustNewConstMetric(collector.lvSizeMetric, prometheus.GaugeValue, lv.Size.AsApproximateFloat64(), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvUsedSizePercentMetric, prometheus.GaugeValue, lv.UsedSizePercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvPermissionMetric, prometheus.CounterValue, float64(lv.Permission), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvBehaviourWhenFullMetric, prometheus.CounterValue, float64(lv.BehaviourWhenFull), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvHealthStatusMetric, prometheus.CounterValue, float64(lv.HealthStatus), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvRaidSyncActionMetric, prometheus.CounterValue, float64(lv.RaidSyncAction), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvMetadataSizeMetric, prometheus.GaugeValue, lv.MetadataSize.AsApproximateFloat64(), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvMetadataUsedPercentMetric, prometheus.GaugeValue, lv.MetadataUsedPercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvSnapshotUsedPercentMetric, prometheus.GaugeValue, lv.SnapshotUsedPercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvSizeMetric, prometheus.GaugeValue, lv.Size.AsApproximateFloat64(), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvUsedSizePercentMetric, prometheus.GaugeValue, lv.UsedSizePercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvPermissionMetric, prometheus.CounterValue, float64(lv.Permission), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvBehaviourWhenFullMetric, prometheus.CounterValue, float64(lv.BehaviourWhenFull), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.PoolName, lv.SegType, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvHealthStatusMetric, prometheus.CounterValue, float64(lv.HealthStatus), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvRaidSyncActionMetric, prometheus.CounterValue, float64(lv.RaidSyncAction), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvMetadataSizeMetric, prometheus.GaugeValue, lv.MetadataSize.AsApproximateFloat64(), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvMetadataUsedPercentMetric, prometheus.GaugeValue, lv.MetadataUsedPercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvSnapshotUsedPercentMetric, prometheus.GaugeValue, lv.SnapshotUsedPercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
 		}
 	}
 
 	pvList, err := lvm.ListLVMPhysicalVolume()
 	if err != nil {
-		klog.Errorf("error in getting the list of lvm logical volumes: %v", err)
+		klog.Errorf("error in getting the list of lvm physical volumes: %v", err)
 	} else {
 		for _, pv := range pvList {
 			ch <- prometheus.MustNewConstMetric(collector.pvSizeMetric, prometheus.GaugeValue, pv.Size.AsApproximateFloat64(), pv.Name, pv.Allocatable, pv.VGName, pv.Missing, pv.InUse)

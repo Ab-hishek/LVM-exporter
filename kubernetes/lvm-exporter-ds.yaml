@@ -18,14 +18,13 @@ spec:
         - key: node-role.kubernetes.io/master
           operator: Exists
           effect: NoSchedule
+      hostNetwork: true
       containers:
         - name: lvm-exporter
-          image: abhishek09dh/lvm-exporter:v3
+          image: abhishek09dh/lvm-exporter:v8
           securityContext:
             privileged: true
-            runAsGroup: 0
-            runAsNonRoot: false
-            runAsUser: 0
+            allowprivilegeescalation: true
           ports:
             - containerPort: 9101
               hostPort: 9101

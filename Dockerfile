@@ -1,7 +1,7 @@
-FROM golang:1.13
+FROM golang:alpine
 
-RUN apt-get update || exit 0
-RUN apt-get install -y lvm2
+RUN apk update \
+    && apk add lvm2
 
 WORKDIR /build
 COPY go.mod ./
