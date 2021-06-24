@@ -126,7 +126,7 @@ func NewLvmCollector() *LvmCollector {
 			"LV health status: [-1: undefined], [0: \"\"], [1: partial], [2: refresh needed], [3: mismatches exist]",
 			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
 		),
-		lvRaidSyncActionMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "total_size_bytes"),
+		lvRaidSyncActionMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "raid_sync_action"),
 			"For LV RAID, the current synchronization action being performed: [-1: undefined], [0: idle], [1: frozen], [2: resync], [3: recover], [4: check], [5: repair]",
 			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
 		),
