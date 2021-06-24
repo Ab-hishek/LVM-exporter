@@ -20,7 +20,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: lvm-exporter
-          image: abhishek09dh/lvm-exporter:v1
+          image: abhishek09dh/lvm-exporter:v3
           securityContext:
             privileged: true
             runAsGroup: 0
