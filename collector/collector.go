@@ -135,28 +135,4 @@ func (collector *LvmCollector) Collect(ch chan<- prometheus.Metric) {
 			ch <- prometheus.MustNewConstMetric(collector.vgMetadataSizeMetric, prometheus.GaugeValue, vg.MetadataSize.AsApproximateFloat64(), vg.Name)
 		}
 	}
-	/*
-		out, err := exec.Command("/sbin/vgs", "--units", "g", "--separator", ",", "-o", "vg_name,vg_free,vg_size", "--noheadings").Output()
-		if err != nil {
-			log.Print(err)
-		}
-		lines := strings.Split(string(out), "\n")
-		for _, line := range lines {
-			values := strings.Split(line, ",")
-			if len(values) == 3 {
-				free_size, err := strconv.ParseFloat(strings.Trim(values[1], "g"), 64)
-				if err != nil {
-					log.Print(err)
-				} else {
-					total_size, err := strconv.ParseFloat(strings.Trim(values[2], "g"), 64)
-					if err != nil {
-						log.Print(err)
-					} else {
-						vg_name := strings.Trim(values[0], " ")
-						ch <- prometheus.MustNewConstMetric(collector.vgFreeMetric, prometheus.GaugeValue, free_size, vg_name)
-						ch <- prometheus.MustNewConstMetric(collector.vgSizeMetric, prometheus.GaugeValue, total_size, vg_name)
-					}
-				}
-			}
-		}*/
 }
