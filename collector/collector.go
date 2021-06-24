@@ -13,7 +13,6 @@ import (
 type LvmCollector struct {
 	vgSizeMetric              *prometheus.Desc
 	vgFreeMetric              *prometheus.Desc
-	vgUsedMetric              *prometheus.Desc
 	vgLvCountMetric           *prometheus.Desc
 	vgPvCountMetric           *prometheus.Desc
 	vgMaxLvMetric             *prometheus.Desc
@@ -25,6 +24,8 @@ type LvmCollector struct {
 	vgMetadataFreeMetric      *prometheus.Desc
 	vgMetadataSizeMetric      *prometheus.Desc
 	vgMetadataCopiesMetric    *prometheus.Desc
+	vgPermissionsMetric       *prometheus.Desc
+	vgAllocationPolicyMetric  *prometheus.Desc
 
 	lvSizeMetric *prometheus.Desc
 }
@@ -39,10 +40,6 @@ func NewLvmCollector() *LvmCollector {
 		),
 		vgSizeMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "vg", "total_bytes"),
 			"LVM VG total size in bytes",
-			[]string{"name"}, nil,
-		),
-		vgUsedMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "vg", "used_bytes"),
-			"LVM VG used size in bytes",
 			[]string{"name"}, nil,
 		),
 		vgLvCountMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "vg", "lv_count"),
@@ -85,6 +82,15 @@ func NewLvmCollector() *LvmCollector {
 			"Size of smallest metadata area for this VG in bytes",
 			[]string{"name"}, nil,
 		),
+		vgPermissionsMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "vg", "permission"),
+			"VG permissions: [-1: undefined], [0: writeable], [1: read-only]",
+			[]string{"name"}, nil,
+		),
+		vgAllocationPolicyMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "vg", "allocation_policy"),
+			"VG allocation policy: [-1: undefined], [0: normal], [1: contiguous], [2: cling], [3: anywhere], [4: inherited]",
+			[]string{"name"}, nil,
+		),
+
 		lvSizeMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "total_size_bytes"),
 			"LVM LV total size in bytes",
 			[]string{"name", "path", "dm_path", "vg", "device"}, nil,
@@ -98,7 +104,6 @@ func (collector *LvmCollector) Describe(ch chan<- *prometheus.Desc) {
 	//Update this section with the each metric you create for a given collector
 	ch <- collector.vgSizeMetric
 	ch <- collector.vgFreeMetric
-	ch <- collector.vgUsedMetric
 	ch <- collector.vgLvCountMetric
 	ch <- collector.vgPvCountMetric
 	ch <- collector.vgMaxLvMetric
@@ -109,6 +114,8 @@ func (collector *LvmCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- collector.vgMetadataUsedCountMetric
 	ch <- collector.vgMetadataFreeMetric
 	ch <- collector.vgMetadataSizeMetric
+	ch <- collector.vgPermissionsMetric
+	ch <- collector.vgAllocationPolicyMetric
 
 	ch <- collector.lvSizeMetric
 }
@@ -122,7 +129,6 @@ func (collector *LvmCollector) Collect(ch chan<- prometheus.Metric) {
 		for _, vg := range vgList {
 			ch <- prometheus.MustNewConstMetric(collector.vgFreeMetric, prometheus.GaugeValue, vg.Free.AsApproximateFloat64(), vg.Name)
 			ch <- prometheus.MustNewConstMetric(collector.vgSizeMetric, prometheus.GaugeValue, vg.Size.AsApproximateFloat64(), vg.Name)
-			ch <- prometheus.MustNewConstMetric(collector.vgUsedMetric, prometheus.GaugeValue, vg.Used.AsApproximateFloat64(), vg.Name)
 			ch <- prometheus.MustNewConstMetric(collector.vgLvCountMetric, prometheus.CounterValue, float64(vg.LVCount), vg.Name)
 			ch <- prometheus.MustNewConstMetric(collector.vgPvCountMetric, prometheus.CounterValue, float64(vg.PVCount), vg.Name)
 			ch <- prometheus.MustNewConstMetric(collector.vgMaxLvMetric, prometheus.CounterValue, float64(vg.MaxLV), vg.Name)
@@ -133,6 +139,8 @@ func (collector *LvmCollector) Collect(ch chan<- prometheus.Metric) {
 			ch <- prometheus.MustNewConstMetric(collector.vgMetadataUsedCountMetric, prometheus.CounterValue, float64(vg.MetadataUsedCount), vg.Name)
 			ch <- prometheus.MustNewConstMetric(collector.vgMetadataFreeMetric, prometheus.GaugeValue, vg.MetadataFree.AsApproximateFloat64(), vg.Name)
 			ch <- prometheus.MustNewConstMetric(collector.vgMetadataSizeMetric, prometheus.GaugeValue, vg.MetadataSize.AsApproximateFloat64(), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgPermissionsMetric, prometheus.CounterValue, float64(vg.Permission), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgAllocationPolicyMetric, prometheus.CounterValue, float64(vg.AllocationPolicy), vg.Name)
 		}
 	}
 }

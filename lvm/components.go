@@ -7,27 +7,24 @@ import (
 // VolumeGroup specifies attributes of a given vg exists on node.
 type VolumeGroup struct {
 	// Name of the lvm volume group.
-	Name string `json:"name"`
+	Name string `json:"vg_name"`
 
 	// UUID denotes a unique identity of a lvm volume group.
-	UUID string `json:"uuid"`
+	UUID string `json:"vg_uuid"`
 
-	// Size specifies the total size of volume group.
-	Size resource.Quantity `json:"size"`
+	// Size specifies the total size of volume group in bytes.
+	Size resource.Quantity `json:"vg_size"`
 
-	// Free specifies the available capacity of volume group.
-	Free resource.Quantity `json:"free"`
-
-	// Free specifies the used capacity of volume group.
-	Used resource.Quantity
+	// Free specifies the available capacity of volume group in bytes.
+	Free resource.Quantity `json:"vg_free"`
 
 	// LVCount denotes total number of logical volumes in
 	// volume group.
-	LVCount int32 `json:"lvCount"`
+	LVCount int32 `json:"lv_count"`
 
 	// PVCount denotes total number of physical volumes
 	// constituting the volume group.
-	PVCount int32 `json:"pvCount"`
+	PVCount int32 `json:"pv_count"`
 
 	MaxLV int32 `json:"max_lv"`
 
@@ -44,20 +41,24 @@ type VolumeGroup struct {
 	MetadataFree resource.Quantity `json:"vg_mda_free"`
 
 	MetadataSize resource.Quantity `json:"vg_mda_size"`
+
+	Permission int `json:"vg_permissions"`
+
+	AllocationPolicy int `json:"vg_allocation_policy"`
 }
 
 // LogicalVolume specifies attributes of a given lv that exists on the node.
 type LogicalVolume struct {
-	// Name of the lvm logical volume(name: pvc-213ca1e6-e271-4ec8-875c-c7def3a4908d)
+	// Name of the lvm logical volume.
 	Name string
 
-	// Full name of the lvm logical volume (fullName: linuxlvmvg/pvc-213ca1e6-e271-4ec8-875c-c7def3a4908d)
+	// Full name of the lvm logical volume.
 	FullName string
 
 	// UUID denotes a unique identity of a lvm logical volume.
 	UUID string
 
-	// Size specifies the total size of logical volume in Bytes
+	// Size specifies the total size of logical volume in bytes
 	Size int64
 
 	// Path specifies LVM logical volume path
@@ -71,4 +72,6 @@ type LogicalVolume struct {
 
 	// Name of the VG in which LVM logical volume is created
 	VGName string
+
+	LVLayout string
 }
