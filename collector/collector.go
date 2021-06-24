@@ -27,7 +27,22 @@ type LvmCollector struct {
 	vgPermissionsMetric       *prometheus.Desc
 	vgAllocationPolicyMetric  *prometheus.Desc
 
-	lvSizeMetric *prometheus.Desc
+	lvSizeMetric                *prometheus.Desc
+	lvUsedSizePercentMetric     *prometheus.Desc
+	lvPermissionMetric          *prometheus.Desc
+	lvBehaviourWhenFullMetric   *prometheus.Desc
+	lvHealthStatusMetric        *prometheus.Desc
+	lvRaidSyncActionMetric      *prometheus.Desc
+	lvMetadataSizeMetric        *prometheus.Desc
+	lvMetadataUsedPercentMetric *prometheus.Desc
+	lvSnapshotUsedPercentMetric *prometheus.Desc
+
+	pvSizeMetric         *prometheus.Desc
+	pvFreeMetric         *prometheus.Desc
+	pvUsedMetric         *prometheus.Desc
+	pvDeviceSizeMetric   *prometheus.Desc
+	pvMetadataSizeMetric *prometheus.Desc
+	pvMetadataFreeMetric *prometheus.Desc
 }
 
 // You must create a constructor for your collector that
@@ -93,7 +108,64 @@ func NewLvmCollector() *LvmCollector {
 
 		lvSizeMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "total_size_bytes"),
 			"LVM LV total size in bytes",
-			[]string{"name", "path", "dm_path", "vg", "device"}, nil,
+			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
+		),
+		lvUsedSizePercentMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "used_size_percent"),
+			"LVM LV used size in percentage",
+			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
+		),
+		lvPermissionMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "permission"),
+			"VG permissions: [-1: undefined], [0: writeable], [1: read-only], [2: read-only-override]",
+			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
+		),
+		lvBehaviourWhenFullMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "when_full"),
+			"For thin pools, behavior when full: [-1: undefined], [0: error], [1: queue]",
+			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
+		),
+		lvHealthStatusMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "health_status"),
+			"LV health status: [-1: undefined], [0: \"\"], [1: partial], [2: refresh needed], [3: mismatches exist]",
+			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
+		),
+		lvRaidSyncActionMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "total_size_bytes"),
+			"For LV RAID, the current synchronization action being performed: [-1: undefined], [0: idle], [1: frozen], [2: resync], [3: recover], [4: check], [5: repair]",
+			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
+		),
+		lvMetadataSizeMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "mda_size_bytes"),
+			"LVM LV metadata size in bytes",
+			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
+		),
+		lvMetadataUsedPercentMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "mda_used_percent"),
+			"LVM LV metadata used size in percentage",
+			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
+		),
+		lvSnapshotUsedPercentMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "snap_percent"),
+			"LVM LV snap used size in percentage",
+			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
+		),
+
+		pvSizeMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "pv", "total_size_bytes"),
+			"LVM PV total size in bytes",
+			[]string{"name", "allocatable", "vg", "missing", "in-use"}, nil,
+		),
+		pvFreeMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "pv", "free_bytes"),
+			"LVM PV free size in bytes",
+			[]string{"name", "allocatable", "vg", "missing", "in-use"}, nil,
+		),
+		pvUsedMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "pv", "used_bytes"),
+			"LVM PV used size in bytes",
+			[]string{"name", "allocatable", "vg", "missing", "in-use"}, nil,
+		),
+		pvDeviceSizeMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "pv", "device_size_bytes"),
+			"LVM PV underlying device size in bytes",
+			[]string{"name", "allocatable", "vg", "missing", "in-use"}, nil,
+		),
+		pvMetadataSizeMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "pv", "mda_size_bytes"),
+			"LVM PV device smallest metadata area size in bytes",
+			[]string{"name", "allocatable", "vg", "missing", "in-use"}, nil,
+		),
+		pvMetadataFreeMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "pv", "mda_free_bytes"),
+			"LVM PV device free metadata area space in bytes",
+			[]string{"name", "allocatable", "vg", "missing", "in-use"}, nil,
 		),
 	}
 }
@@ -118,6 +190,22 @@ func (collector *LvmCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- collector.vgAllocationPolicyMetric
 
 	ch <- collector.lvSizeMetric
+	ch <- collector.lvUsedSizePercentMetric
+	ch <- collector.lvPermissionMetric
+	ch <- collector.lvBehaviourWhenFullMetric
+	ch <- collector.lvHealthStatusMetric
+	ch <- collector.lvRaidSyncActionMetric
+	ch <- collector.lvMetadataSizeMetric
+	ch <- collector.lvMetadataUsedPercentMetric
+	ch <- collector.lvSnapshotUsedPercentMetric
+
+	ch <- collector.pvSizeMetric
+	ch <- collector.pvFreeMetric
+	ch <- collector.pvUsedMetric
+	ch <- collector.pvDeviceSizeMetric
+	ch <- collector.pvMetadataSizeMetric
+	ch <- collector.pvMetadataFreeMetric
+
 }
 
 // Collect implements required collect function for all prometheus collectors
@@ -141,6 +229,37 @@ func (collector *LvmCollector) Collect(ch chan<- prometheus.Metric) {
 			ch <- prometheus.MustNewConstMetric(collector.vgMetadataSizeMetric, prometheus.GaugeValue, vg.MetadataSize.AsApproximateFloat64(), vg.Name)
 			ch <- prometheus.MustNewConstMetric(collector.vgPermissionsMetric, prometheus.CounterValue, float64(vg.Permission), vg.Name)
 			ch <- prometheus.MustNewConstMetric(collector.vgAllocationPolicyMetric, prometheus.CounterValue, float64(vg.AllocationPolicy), vg.Name)
+		}
+	}
+
+	lvList, err := lvm.ListLVMLogicalVolume()
+	if err != nil {
+		klog.Errorf("error in getting the list of lvm logical volumes: %v", err)
+	} else {
+		for _, lv := range lvList {
+			ch <- prometheus.MustNewConstMetric(collector.lvSizeMetric, prometheus.GaugeValue, lv.Size.AsApproximateFloat64(), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvUsedSizePercentMetric, prometheus.GaugeValue, lv.UsedSizePercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvPermissionMetric, prometheus.CounterValue, float64(lv.Permission), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvBehaviourWhenFullMetric, prometheus.CounterValue, float64(lv.BehaviourWhenFull), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvHealthStatusMetric, prometheus.CounterValue, float64(lv.HealthStatus), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvRaidSyncActionMetric, prometheus.CounterValue, float64(lv.RaidSyncAction), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvMetadataSizeMetric, prometheus.GaugeValue, lv.MetadataSize.AsApproximateFloat64(), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvMetadataUsedPercentMetric, prometheus.GaugeValue, lv.MetadataUsedPercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvSnapshotUsedPercentMetric, prometheus.GaugeValue, lv.SnapshotUsedPercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.ActiveStatus)
+		}
+	}
+
+	pvList, err := lvm.ListLVMPhysicalVolume()
+	if err != nil {
+		klog.Errorf("error in getting the list of lvm logical volumes: %v", err)
+	} else {
+		for _, pv := range pvList {
+			ch <- prometheus.MustNewConstMetric(collector.pvSizeMetric, prometheus.GaugeValue, pv.Size.AsApproximateFloat64(), pv.Name, pv.Allocatable, pv.VGName, pv.Missing, pv.InUse)
+			ch <- prometheus.MustNewConstMetric(collector.pvFreeMetric, prometheus.GaugeValue, pv.Free.AsApproximateFloat64(), pv.Name, pv.Allocatable, pv.VGName, pv.Missing, pv.InUse)
+			ch <- prometheus.MustNewConstMetric(collector.pvUsedMetric, prometheus.GaugeValue, pv.Used.AsApproximateFloat64(), pv.Name, pv.Allocatable, pv.VGName, pv.Missing, pv.InUse)
+			ch <- prometheus.MustNewConstMetric(collector.pvDeviceSizeMetric, prometheus.GaugeValue, pv.DeviceSize.AsApproximateFloat64(), pv.Name, pv.Allocatable, pv.VGName, pv.Missing, pv.InUse)
+			ch <- prometheus.MustNewConstMetric(collector.pvMetadataSizeMetric, prometheus.GaugeValue, pv.MetadataSize.AsApproximateFloat64(), pv.Name, pv.Allocatable, pv.VGName, pv.Missing, pv.InUse)
+			ch <- prometheus.MustNewConstMetric(collector.pvMetadataFreeMetric, prometheus.GaugeValue, pv.MetadataFree.AsApproximateFloat64(), pv.Name, pv.Allocatable, pv.VGName, pv.Missing, pv.InUse)
 		}
 	}
 }
