@@ -215,8 +215,8 @@ func parseLogicalVolume(m map[string]string) (LogicalVolume, error) {
 	lv.SegType = m["segtype"]
 	lv.Permission = getIntFieldValue("lv_permissions", m["lv_permissions"])
 	lv.BehaviourWhenFull = getIntFieldValue("lv_when_full", m["lv_when_full"])
-	lv.RaidSyncAction = getIntFieldValue("lv_health_status", m["lv_health_status"])
-	lv.HealthStatus = getIntFieldValue("raid_sync_action", m["raid_sync_action"])
+	lv.HealthStatus = getIntFieldValue("lv_health_status", m["lv_health_status"])
+	lv.RaidSyncAction = getIntFieldValue("raid_sync_action", m["raid_sync_action"])
 	lv.Host = m["lv_host"]
 	lv.PoolName = m["pool_lv"]
 

@@ -21,7 +21,7 @@ spec:
       hostNetwork: true
       containers:
         - name: lvm-exporter
-          image: abhishek09dh/lvm-exporter:v8
+          image: abhishek09dh/lvm-exporter:v9
           securityContext:
             privileged: true
             allowprivilegeescalation: true
