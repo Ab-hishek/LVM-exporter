@@ -23,7 +23,7 @@ const (
 
 var (
 	Enums = map[string][]string{
-		"lv_permissions":       {"writeable", "read-only", "read-only-override"},
+		"lv_permissions":       {"unknown", "writeable", "read-only", "read-only-override"},
 		"lv_when_full":         {"error", "queue"},
 		"raid_sync_action":     {"idle", "frozen", "resync", "recover", "check", "repair"},
 		"lv_health_status":     {"", "partial", "refresh needed", "mismatches exist"},

@@ -115,7 +115,7 @@ func NewLvmCollector() *LvmCollector {
 			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
 		),
 		lvPermissionMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "permission"),
-			"VG permissions: [-1: undefined], [0: writeable], [1: read-only], [2: read-only-override]",
+			"VG permissions: [-1: undefined], [0: unknown], [1: writeable], [2: read-only], [3: read-only-override]",
 			[]string{"name", "path", "dm_path", "vg", "device", "host", "segtype", "pool", "active_status"}, nil,
 		),
 		lvBehaviourWhenFullMetric: prometheus.NewDesc(prometheus.BuildFQName("lvm", "lv", "when_full"),
@@ -216,18 +216,18 @@ func (collector *LvmCollector) Collect(ch chan<- prometheus.Metric) {
 		for _, vg := range vgList {
 			ch <- prometheus.MustNewConstMetric(collector.vgFreeMetric, prometheus.GaugeValue, vg.Free.AsApproximateFloat64(), vg.Name)
 			ch <- prometheus.MustNewConstMetric(collector.vgSizeMetric, prometheus.GaugeValue, vg.Size.AsApproximateFloat64(), vg.Name)
-			ch <- prometheus.MustNewConstMetric(collector.vgLvCountMetric, prometheus.CounterValue, float64(vg.LVCount), vg.Name)
-			ch <- prometheus.MustNewConstMetric(collector.vgPvCountMetric, prometheus.CounterValue, float64(vg.PVCount), vg.Name)
-			ch <- prometheus.MustNewConstMetric(collector.vgMaxLvMetric, prometheus.CounterValue, float64(vg.MaxLV), vg.Name)
-			ch <- prometheus.MustNewConstMetric(collector.vgMaxPvMetric, prometheus.CounterValue, float64(vg.MaxPV), vg.Name)
-			ch <- prometheus.MustNewConstMetric(collector.vgSnapCountMetric, prometheus.CounterValue, float64(vg.SnapCount), vg.Name)
-			ch <- prometheus.MustNewConstMetric(collector.vgMissingPvCountMetric, prometheus.CounterValue, float64(vg.MissingPVCount), vg.Name)
-			ch <- prometheus.MustNewConstMetric(collector.vgMetadataCountMetric, prometheus.CounterValue, float64(vg.MetadataCount), vg.Name)
-			ch <- prometheus.MustNewConstMetric(collector.vgMetadataUsedCountMetric, prometheus.CounterValue, float64(vg.MetadataUsedCount), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgLvCountMetric, prometheus.GaugeValue, float64(vg.LVCount), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgPvCountMetric, prometheus.GaugeValue, float64(vg.PVCount), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgMaxLvMetric, prometheus.GaugeValue, float64(vg.MaxLV), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgMaxPvMetric, prometheus.GaugeValue, float64(vg.MaxPV), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgSnapCountMetric, prometheus.GaugeValue, float64(vg.SnapCount), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgMissingPvCountMetric, prometheus.GaugeValue, float64(vg.MissingPVCount), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgMetadataCountMetric, prometheus.GaugeValue, float64(vg.MetadataCount), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgMetadataUsedCountMetric, prometheus.GaugeValue, float64(vg.MetadataUsedCount), vg.Name)
 			ch <- prometheus.MustNewConstMetric(collector.vgMetadataFreeMetric, prometheus.GaugeValue, vg.MetadataFree.AsApproximateFloat64(), vg.Name)
 			ch <- prometheus.MustNewConstMetric(collector.vgMetadataSizeMetric, prometheus.GaugeValue, vg.MetadataSize.AsApproximateFloat64(), vg.Name)
-			ch <- prometheus.MustNewConstMetric(collector.vgPermissionsMetric, prometheus.CounterValue, float64(vg.Permission), vg.Name)
-			ch <- prometheus.MustNewConstMetric(collector.vgAllocationPolicyMetric, prometheus.CounterValue, float64(vg.AllocationPolicy), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgPermissionsMetric, prometheus.GaugeValue, float64(vg.Permission), vg.Name)
+			ch <- prometheus.MustNewConstMetric(collector.vgAllocationPolicyMetric, prometheus.GaugeValue, float64(vg.AllocationPolicy), vg.Name)
 		}
 	}
 
@@ -238,10 +238,10 @@ func (collector *LvmCollector) Collect(ch chan<- prometheus.Metric) {
 		for _, lv := range lvList {
 			ch <- prometheus.MustNewConstMetric(collector.lvSizeMetric, prometheus.GaugeValue, lv.Size.AsApproximateFloat64(), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
 			ch <- prometheus.MustNewConstMetric(collector.lvUsedSizePercentMetric, prometheus.GaugeValue, lv.UsedSizePercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvPermissionMetric, prometheus.CounterValue, float64(lv.Permission), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvBehaviourWhenFullMetric, prometheus.CounterValue, float64(lv.BehaviourWhenFull), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.PoolName, lv.SegType, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvHealthStatusMetric, prometheus.CounterValue, float64(lv.HealthStatus), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
-			ch <- prometheus.MustNewConstMetric(collector.lvRaidSyncActionMetric, prometheus.CounterValue, float64(lv.RaidSyncAction), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvPermissionMetric, prometheus.GaugeValue, float64(lv.Permission), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvBehaviourWhenFullMetric, prometheus.GaugeValue, float64(lv.BehaviourWhenFull), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvHealthStatusMetric, prometheus.GaugeValue, float64(lv.HealthStatus), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
+			ch <- prometheus.MustNewConstMetric(collector.lvRaidSyncActionMetric, prometheus.GaugeValue, float64(lv.RaidSyncAction), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
 			ch <- prometheus.MustNewConstMetric(collector.lvMetadataSizeMetric, prometheus.GaugeValue, lv.MetadataSize.AsApproximateFloat64(), lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
 			ch <- prometheus.MustNewConstMetric(collector.lvMetadataUsedPercentMetric, prometheus.GaugeValue, lv.MetadataUsedPercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
 			ch <- prometheus.MustNewConstMetric(collector.lvSnapshotUsedPercentMetric, prometheus.GaugeValue, lv.SnapshotUsedPercent, lv.Name, lv.Path, lv.DMPath, lv.VGName, lv.Device, lv.Host, lv.SegType, lv.PoolName, lv.ActiveStatus)
