@@ -226,7 +226,7 @@ func parseLogicalVolume(m map[string]string) (LogicalVolume, error) {
 		"snap_percent":     &lv.SnapshotUsedPercent,
 	}
 	for key, value := range float64Map {
-		if m["segtype"] != LVThinPool && key == "metadata_percent" {
+		if m[key] == "" {
 			count = 0
 		} else {
 			count, err = strconv.ParseFloat(m[key], 64)
