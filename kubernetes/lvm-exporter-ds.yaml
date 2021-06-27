@@ -24,7 +24,7 @@ spec:
           image: abhishek09dh/lvm-exporter:v1.5
           securityContext:
             privileged: true
-            allowprivilegeescalation: true
+            allowPrivilegeEscalation: true
           ports:
             - containerPort: 9101
               hostPort: 9101
