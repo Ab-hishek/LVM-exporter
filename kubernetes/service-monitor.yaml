@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: lvm-exporter
+  name: lvm-exporter
+  namespace: exporter
+spec:
+  endpoints:
+    - path: /metrics
+      port: exporter
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      app: lvm-exporter
