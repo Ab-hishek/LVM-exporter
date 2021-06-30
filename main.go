@@ -49,10 +49,20 @@ func main() {
 	}
 	registry.MustRegister(version.NewCollector("lvm_exporter"))
 
-	//Create a new instance of the LvmCollector and
+	//Create a new instance of the LvmVgCollector and
 	//register it with the prometheus client.
-	lvmExporter := collector.NewLvmCollector()
-	registry.MustRegister(lvmExporter)
+	LvmVgCollector := collector.NewVgCollector()
+	registry.MustRegister(LvmVgCollector)
+
+	//Create a new instance of the LvmLvCollector and
+	//register it with the prometheus client.
+	LvmLvCollector := collector.NewLvCollector()
+	registry.MustRegister(LvmLvCollector)
+
+	//Create a new instance of the LvmPvCollector and
+	//register it with the prometheus client.
+	LvmPvCollector := collector.NewPvCollector()
+	registry.MustRegister(LvmPvCollector)
 
 	http.Handle(*metricsPath, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
